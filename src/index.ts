@@ -1,6 +1,5 @@
 // Stripe key env variables
 import { config } from "dotenv"
-import express, { Request, Response, NextFunction } from "express";
 
 if (process.env.NODE_ENV !== 'production') {
   // use whatever env variables in docker container or server
