@@ -4,6 +4,7 @@ import cors from 'cors';
 export const app = express();
 
 import { createStripeCheckoutSession } from './checkout';
+import { createPaymentIntent } from './payments';
 
 
 //express process incoming body as string: meaning decode and parse on every request
@@ -44,5 +45,18 @@ app.post(
     //await to receive body information then execute code 
     console.log(body);
     res.send(await createStripeCheckoutSession(body.line_items));
+  })
+);
+
+/**
+ * Payment Intents
+ */
+
+app.post(
+  '/payments',
+  runAsync(async ({ body }: Request, res: Response) => {
+    res.send(
+      await createPaymentIntent(body.amount)
+    );
   })
 );
