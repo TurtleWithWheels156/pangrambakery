@@ -5,14 +5,23 @@ export const app = express();
 
 import { createStripeCheckoutSession } from './checkout';
 import { createPaymentIntent } from './payments';
+import { handleStripeWebhook } from './webhooks';
 
 
 //express process incoming body as string: meaning decode and parse on every request
 //use middleware to change behavior of express;
-app.use(express.json());
+//app.use(express.json());
 
 //make api accessible to other urls, like frontend application.
 app.use( cors({ origin: true }));
+
+// Update the express middleware to include the body buffer as rawbody property
+// need buffer because signed request.
+app.use(
+  express.json({
+    verify: (req, res, buffer) => (req['rawBody'] = buffer),
+  })
+);
 
 app.post('/test', (req: Request, res: Response) => {
   const amount = req.body.amount;
@@ -26,6 +35,9 @@ app.post('/test', (req: Request, res: Response) => {
  * Catch async errors when awaiting promises 
  * if error occurs, catch error and sends error response from endpoint
  * can wrap this around any endpoint callback that we may need
+ * req: body from client
+ * res: body to send back
+ * next: pass control to next matching route
  */
  function runAsync(callback: Function) {
   return (req: Request, res: Response, next: NextFunction) => {
@@ -60,3 +72,5 @@ app.post(
     );
   })
 );
+
+app.post('/hooks', runAsync(handleStripeWebhook));
